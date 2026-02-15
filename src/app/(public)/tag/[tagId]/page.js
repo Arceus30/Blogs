@@ -4,7 +4,7 @@ import api from "@/lib/api";
 export const generateMetadata = async ({ params }) => {
     const tagId = (await params)?.tagId;
     const response = await api.get(
-        `${process.env.NEXT_PUBLIC_TAG_API.replace("tagId", tagId)}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}${process.env.NEXT_PUBLIC_TAG_API.replace("tagId", tagId)}`,
     );
     const name = response?.data?.tag?.name;
     return {

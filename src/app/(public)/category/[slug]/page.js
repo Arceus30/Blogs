@@ -5,7 +5,7 @@ export const generateMetadata = async ({ params }) => {
     const slug = (await params)?.slug === "all" ? "" : (await params)?.slug;
     if (slug === "") return { title: "All" };
     const catResponse = await api.get(
-        `${process.env.NEXT_PUBLIC_CATEGORY_API.replace("catSlug", slug)}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}${process.env.NEXT_PUBLIC_CATEGORY_API.replace("catSlug", slug)}`,
     );
     const name = catResponse?.data?.category?.name;
     return {
