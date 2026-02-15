@@ -59,7 +59,7 @@ export default function CategoryList() {
     if (loading) return <Loading />;
 
     return (
-        allCategories.length > 0 && (
+        allCategories.length > 1 && (
             <>
                 <h2 className="text-3xl font-bold mb-8 text-center">
                     Categories
