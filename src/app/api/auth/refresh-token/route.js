@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { verifyRefreshToken } from "@/utils/token";
 import User from "@/models/User";
+import Image from "@/models/Image";
 import { generateAccessToken, generateRefreshToken } from "@/utils/token";
 
 export const POST = async (request) => {

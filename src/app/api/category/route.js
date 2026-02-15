@@ -1,6 +1,7 @@
 import { dbConnect } from "@/lib/db";
 import { NextResponse } from "next/server";
 import Category from "@/models/Category";
+import User from "@/models/User";
 
 export const GET = async (req) => {
     try {

@@ -2,8 +2,11 @@ import { dbConnect } from "@/lib/db";
 import { NextResponse } from "next/server";
 import Blog from "@/models/Blog";
 import Category from "@/models/Category";
-import User from "@/models/User";
+import Comment from "@/models/Comment";
+import Image from "@/models/Image";
 import Tag from "@/models/Tag";
+import TagBlogJunction from "@/models/TagBlogJunction";
+import User from "@/models/User";
 
 export const GET = async (req) => {
     try {

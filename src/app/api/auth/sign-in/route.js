@@ -1,5 +1,6 @@
 import { dbConnect } from "@/lib/db";
 import User from "@/models/User";
+import Image from "@/models/Image";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { signInSchema } from "@/utils/serverSchema";

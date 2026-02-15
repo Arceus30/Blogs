@@ -1,5 +1,6 @@
 import { dbConnect } from "@/lib/db";
 import User from "@/models/User";
+import Image from "@/models/Image";
 import { verifyAccessToken } from "@/utils/token";
 import { NextResponse } from "next/server";
 
