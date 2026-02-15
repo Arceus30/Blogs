@@ -152,3 +152,166 @@ export const GET = async (request) => {
         );
     }
 };
+
+export const POST = async (request) => {
+    let bannerImageId = null;
+    try {
+        await dbConnect();
+
+        const accessToken = await request.headers
+            ?.get("authorization")
+            ?.replace("Bearer ", "");
+        if (!accessToken) {
+            console.error("Token does not exist");
+            return NextResponse.json(
+                { message: "Unauthorized", success: false },
+                { status: 400 },
+            );
+        }
+        const decodedToken = verifyAccessToken(accessToken);
+        const user = await User.findById(decodedToken?.userId);
+        if (!user) {
+            console.error("User not found");
+            return NextResponse.json(
+                { message: "User not Found", success: false },
+                { status: 400 },
+            );
+        }
+
+        const formData = await request.formData();
+        const blogData = Object.fromEntries(formData.entries());
+        delete blogData.bannerImage;
+
+        const { error, value: validatedData } = blogSchema.validate(blogData, {
+            abortEarly: false,
+            stripUnknown: true,
+        });
+
+        if (error) {
+            const errorMessage = error.details[0];
+            console.error(errorMessage);
+            return NextResponse.json(
+                { message: errorMessage, success: false },
+                { status: 400 },
+            );
+        }
+
+        const bannerImage = formData.get("bannerImage[]");
+        if (bannerImage?.size > 0 && photoType.includes(bannerImage?.type)) {
+            const bytes = await bannerImage.arrayBuffer();
+            const buffer = Buffer.from(bytes);
+
+            const imageExist = await Image.findOne({
+                buffer: buffer,
+                size: buffer.length,
+                contentType: bannerImage.type,
+            });
+            bannerImageId = imageExist._id;
+
+            if (!imageExist) {
+                const imageDoc = new Image({
+                    filename: bannerImage.name,
+                    contentType: bannerImage.type,
+                    buffer: buffer,
+                    size: buffer.length,
+                });
+                const savedImage = await imageDoc.save();
+                bannerImageId = savedImage._id;
+            }
+        }
+
+        let category = await Category.ensureGeneralCategory(user._id);
+        if (validatedData.category) {
+            category = await Category.findByIdAndUpdate(
+                validatedData.category,
+                { $inc: { blogCount: 1 } },
+                { returnDocument: "after" },
+            );
+        } else {
+            category = await Category.findByIdAndUpdate(
+                category._id,
+                { $inc: { blogCount: 1 } },
+                { returnDocument: "after" },
+            );
+        }
+
+        user.numBlogs += 1;
+        await user.save();
+
+        let newSlug = slug(validatedData.title);
+        let slugFound = await Blog.findOne({ slug: newSlug });
+        let i = 1;
+        while (slugFound) {
+            newSlug = slug(validatedData.title + i);
+            slugFound = await Blog.findOne({ slug: newSlug });
+            i += 1;
+        }
+        const newBlog = new Blog({
+            title: validatedData.title,
+            slug: newSlug,
+            content: validatedData.content,
+            category: category._id,
+            bannerImage: bannerImageId,
+            status: "published",
+            author: user._id,
+        });
+
+        const savedBlog = await newBlog.save();
+
+        const rawTags = formData.get("tags");
+
+        if (rawTags) {
+            const tagNames = rawTags
+                .split(" ")
+                .map((tag) => tag.trim())
+                .filter((tag) => tag !== "");
+            const tags = await Promise.all(
+                tagNames.map(async (name) => {
+                    return await Tag.findOneAndUpdate(
+                        { name: { $regex: name, $options: "i" } },
+                        { name },
+                        { upsert: true, returnDocument: "after" },
+                    );
+                }),
+            );
+
+            const junctions = tags.map(
+                (tag) =>
+                    new TagBlogJunction({
+                        tag: tag._id,
+                        blog: savedBlog._id,
+                    }),
+            );
+
+            await Promise.all(junctions.map((j) => j.save()));
+        }
+
+        return NextResponse.json(
+            {
+                message: "Blog Created Successfully",
+                success: true,
+                blog: savedBlog,
+            },
+            { status: 200 },
+        );
+    } catch (err) {
+        if (bannerImageId) {
+            const blog = await Blog.findOne({ bannerImage: bannerImageId });
+            const user = await User.findOne({ profilePhoto: bannerImageId });
+            if (!user & !blog) await Image.findByIdAndDelete(bannerImageId);
+        }
+        console.error("Blog Creation error:", err);
+        return NextResponse.json(
+            {
+                message: err?.message || "Blog Creation Failed",
+                success: false,
+            },
+            {
+                status:
+                    err?.message === "jwt expired"
+                        ? 401
+                        : err?.statusCode || 500,
+            },
+        );
+    }
+};

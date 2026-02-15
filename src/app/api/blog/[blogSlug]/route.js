@@ -57,3 +57,370 @@ export const GET = async (_request, { params }) => {
         );
     }
 };
+
+export const PUT = async (request, { params }) => {
+    try {
+        await dbConnect();
+        const accessToken = await request.headers
+            ?.get("authorization")
+            ?.replace("Bearer ", "");
+        if (!accessToken) {
+            console.error("Token does not exist");
+            return NextResponse.json(
+                { message: "Unauthorized", success: false },
+                { status: 400 },
+            );
+        }
+        const decodedToken = verifyAccessToken(accessToken);
+        let user = await User.findById(decodedToken?.userId);
+        if (!user) {
+            console.error("User not found");
+            return NextResponse.json(
+                { message: "User not Found", success: false },
+                { status: 400 },
+            );
+        }
+
+        const { blogSlug } = await params;
+        const formData = await request.formData();
+
+        const blog = await Blog.findOne({ slug: blogSlug }).populate(
+            "category",
+        );
+
+        if (!blog)
+            return NextResponse.json(
+                {
+                    message: "No Blogs Found",
+                    success: false,
+                },
+                { status: 400 },
+            );
+
+        if (blog?.author.toString() !== user._id.toString()) {
+            return NextResponse.json(
+                {
+                    message: "You are not authorized",
+                    success: false,
+                },
+                { status: 400 },
+            );
+        }
+
+        const blogData = Object.fromEntries(formData.entries());
+        delete blogData.tags;
+        delete blogData.bannerImage;
+
+        const { error, value: validatedData } = blogSchema.validate(blogData, {
+            abortEarly: false,
+            stripUnknown: true,
+        });
+
+        if (error) {
+            const errorMessage = error.details[0];
+            console.error(errorMessage);
+            return NextResponse.json(
+                {
+                    message: errorMessage,
+                    success: false,
+                },
+                { status: 400 },
+            );
+        }
+
+        let category = await Category.findById(blog?.category?._id);
+        if (!validatedData?.category) {
+            category = await Category.ensureGeneralCategory(user._id);
+            category.blogCount += 1;
+            await category.save();
+        }
+        if (
+            validatedData?.category &&
+            validatedData?.category !== blog?.category?._id
+        ) {
+            category = await Category.findByIdAndUpdate(
+                validatedData?.category,
+                { $inc: { blogCount: 1 } },
+                { returnDocument: "after" },
+            );
+            await Category.findByIdAndUpdate(
+                blog?.category?._id,
+                { $inc: { blogCount: -1 } },
+                { returnDocument: "after", runValidators: true },
+            );
+        }
+
+        const rawTags = formData.get("tags");
+
+        if (rawTags) {
+            const tagNames = rawTags
+                .split(" ")
+                .map((tag) => tag.trim())
+                .filter((tag) => tag !== "");
+
+            const existingTags = await Tag.find({
+                name: { $in: tagNames },
+            });
+            const existingTagsIds = existingTags.map((tag) => tag._id);
+
+            const oldTagsToKeep = await TagBlogJunction.find({
+                $and: [{ blog: blog?._id }, { tag: { $in: existingTagsIds } }],
+            }).populate("tag");
+            const oldTagsToKeepIds = oldTagsToKeep.map(
+                (oldTags) => oldTags.tag._id,
+            );
+
+            const oldTagsToDelete = await TagBlogJunction.find({
+                $and: [
+                    { blog: blog?._id },
+                    { tag: { $nin: oldTagsToKeepIds } },
+                ],
+            });
+            const oldTagsToDeleteIds = oldTagsToDelete.map((jun) => jun.tag);
+            await TagBlogJunction.deleteMany({
+                $and: [
+                    { blog: blog?._id },
+                    { tag: { $in: oldTagsToDeleteIds } },
+                ],
+            });
+
+            for (const tagName of tagNames) {
+                if (
+                    !oldTagsToKeep.some(
+                        (tagBlog) => tagBlog?.tag?.name === tagName,
+                    )
+                ) {
+                    let tag = await Tag.findOne({ name: tagName });
+                    if (!tag) {
+                        tag = new Tag({ name: tagName });
+                        await tag.save();
+                    }
+                    if (tag) {
+                        await TagBlogJunction.insertOne({
+                            tag,
+                            blog,
+                        });
+                    }
+                }
+            }
+
+            for (const jun of oldTagsToDelete) {
+                const remainingJun = await TagBlogJunction.countDocuments({
+                    tag: jun.tag,
+                    blog: { $ne: blog?._id },
+                });
+                if (remainingJun === 0) {
+                    await Tag.findByIdAndDelete(jun.tag);
+                }
+            }
+        }
+
+        let newSlug = slug(validatedData.title);
+        let slugFound = await Blog.findOne({ slug: newSlug });
+        let i = 1;
+        while (slugFound && slugFound._id !== blog._id) {
+            newSlug = slug(validatedData.title + i);
+            slugFound = await Blog.findOne({ slug: newSlug });
+            i += 1;
+        }
+
+        const updatedBlog = await Blog.findByIdAndUpdate(
+            blog._id,
+            {
+                title: validatedData?.title,
+                slug: newSlug,
+                content: validatedData?.content,
+                category: category?._id,
+                publishedAt: Date.now(),
+            },
+            { runValidators: true, returnDocument: "after" },
+        );
+        return NextResponse.json(
+            { message: "Blog Updated Successfully", success: true },
+            { status: 200 },
+        );
+    } catch (err) {
+        console.error("Error Updating Blog: ", err);
+        return NextResponse.json(
+            {
+                message: err?.message || "Error Updating Blog",
+                success: false,
+            },
+            {
+                status:
+                    err?.message === "jwt expired"
+                        ? 401
+                        : err?.statusCode || 500,
+            },
+        );
+    }
+};
+
+export const PATCH = async (request, { params }) => {
+    try {
+        await dbConnect();
+        const accessToken = await request.headers
+            ?.get("authorization")
+            ?.replace("Bearer ", "");
+        if (!accessToken) {
+            console.error("Token does not exist");
+            return NextResponse.json(
+                { message: "Unauthorized", success: false },
+                { status: 400 },
+            );
+        }
+        const decodedToken = verifyAccessToken(accessToken);
+        let user = await User.findById(decodedToken?.userId);
+        if (!user) {
+            console.error("User not found");
+            return NextResponse.json(
+                { message: "User not Found", success: false },
+                { status: 400 },
+            );
+        }
+
+        const { blogSlug } = await params;
+
+        const formData = await request.formData();
+        const field = formData.get("field");
+        const value = formData.get("value");
+
+        const blog = await Blog.findOne({ slug: blogSlug });
+        if (!blog) {
+            console.error(`Blog with slug ${blogSlug} not found`);
+            return NextResponse.json(
+                {
+                    message: "No Blogs Found",
+                    success: false,
+                },
+                { status: 400 },
+            );
+        }
+
+        if (blog?.author.toString() !== user?._id.toString()) {
+            console.error(`You are not authorized`);
+            return NextResponse.json(
+                {
+                    message: "You are not authorized",
+                    success: false,
+                },
+                { status: 400 },
+            );
+        }
+        blog[field] = value;
+        await blog.save({ runValidators: true });
+        return NextResponse.json(
+            { success: true, message: "Blog Updated Successfully" },
+            { status: 200 },
+        );
+    } catch (err) {
+        console.error("Error Updating Blog: ", err);
+        return NextResponse.json(
+            {
+                message: err?.message || "Error Updating Blog",
+                success: false,
+            },
+            {
+                status:
+                    err?.message === "jwt expired"
+                        ? 401
+                        : err?.statusCode || 500,
+            },
+        );
+    }
+};
+
+export const DELETE = async (request, { params }) => {
+    try {
+        await dbConnect();
+        const accessToken = await request.headers
+            ?.get("authorization")
+            ?.replace("Bearer ", "");
+        if (!accessToken) {
+            console.error("Token does not exist");
+            return NextResponse.json(
+                { message: "Unauthorized", success: false },
+                { status: 400 },
+            );
+        }
+        const decodedToken = verifyAccessToken(accessToken);
+        let user = await User.findById(decodedToken?.userId);
+        if (!user) {
+            console.error("User not found");
+            return NextResponse.json(
+                { message: "User not Found", success: false },
+                { status: 400 },
+            );
+        }
+
+        const { blogSlug } = await params;
+
+        const blogToBeDeleted = await Blog.findOne({ slug: blogSlug });
+
+        if (!blogToBeDeleted) {
+            console.error(`Blog with slug ${blogSlug} does not exist`);
+            return NextResponse.json(
+                {
+                    message: "No Blogs Found",
+                    success: false,
+                },
+                { status: 400 },
+            );
+        }
+        if (blogToBeDeleted?.author.toString() !== user._id.toString()) {
+            console.error("You are not authorized");
+            return NextResponse.json(
+                {
+                    message: "You are not authorized",
+                    success: false,
+                },
+                { status: 400 },
+            );
+        }
+
+        await Category.findByIdAndUpdate(blogToBeDeleted.category, {
+            $inc: { blogCount: -1 },
+        });
+
+        const tagsToBeDeleted = await TagBlogJunction.find({
+            blog: blogToBeDeleted._id,
+        });
+
+        const tagIds = tagsToBeDeleted.map((t) => t._id);
+
+        await TagBlogJunction.deleteMany({ blog: blogToBeDeleted._id });
+
+        await Promise.all(
+            tagIds.map(async (t) => {
+                const tagFound = await TagBlogJunction.findOne({
+                    tag: t._id,
+                });
+                if (!tagFound) await Tag.findByIdAndDelete(t._id);
+            }),
+        );
+
+        await User.findByIdAndUpdate(blogToBeDeleted.author, {
+            $inc: { numBlogs: -1 },
+        });
+
+        await Blog.deleteOne({ slug: blogSlug });
+        return NextResponse.json(
+            { message: "Blog deleted Successfully", success: true },
+            { status: 200 },
+        );
+    } catch (err) {
+        console.error("Error Deleting Blog: ", err);
+        return NextResponse.json(
+            {
+                message: err?.message || "Error Deleting Blog",
+                success: false,
+            },
+            {
+                status:
+                    err?.message === "jwt expired"
+                        ? 401
+                        : err?.statusCode || 500,
+            },
+        );
+    }
+};

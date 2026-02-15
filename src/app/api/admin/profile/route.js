@@ -61,3 +61,63 @@ export const GET = async (request) => {
         );
     }
 };
+
+export const PUT = async (request) => {
+    try {
+        await dbConnect();
+
+        const accessToken = await request.headers
+            ?.get("authorization")
+            ?.replace("Bearer ", "");
+        if (!accessToken) {
+            console.error("Token does not exist");
+            return NextResponse.json(
+                { message: "Unauthorized", success: false },
+                { status: 400 },
+            );
+        }
+        const decodedToken = verifyAccessToken(accessToken);
+        const user = await User.findById(decodedToken?.userId);
+        if (!user) {
+            console.error("User not found");
+            return NextResponse.json(
+                { message: "User not Found", success: false },
+                { status: 400 },
+            );
+        }
+
+        const formData = await request.formData();
+        const userData = Object.fromEntries(formData.entries());
+
+        const updatedUser = await User.findByIdAndUpdate(user._id, userData, {
+            returnDocument: "after",
+            runValidators: true,
+        });
+
+        if (!updatedUser) {
+            console.error("User not found");
+            return NextResponse.json(
+                { message: "User not found", success: false },
+                { status: 404 },
+            );
+        }
+        return NextResponse.json(
+            { success: true, message: "User profile updated successfully" },
+            { status: 200 },
+        );
+    } catch (err) {
+        console.error("User Fetch Error: ", err.message);
+        return NextResponse.json(
+            {
+                message: err?.message || "Error updating profile",
+                success: false,
+            },
+            {
+                status:
+                    err?.message === "jwt expired"
+                        ? 401
+                        : err?.statusCode || 500,
+            },
+        );
+    }
+};

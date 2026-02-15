@@ -324,7 +324,7 @@ export const UpdateProfileForm = () => {
         try {
             setLoading(true);
             const res = await api.put(
-                process.env.NEXT_PUBLIC_ADMIN_USER_PROFILE_API,
+                process.env.NEXT_PUBLIC_ADMIN_PROFILE_API,
                 data,
                 {
                     headers: { "Content-type": "multipart/form-data" },
