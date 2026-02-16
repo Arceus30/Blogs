@@ -394,8 +394,6 @@ export const DELETE = async (request, { params }) => {
             $inc: { numBlogs: -1 },
         });
 
-        await Blog.deleteOne({ slug: blogSlug });
-
         await Promise.all(
             tagIds.map(async (t) => {
                 const tagFound = await TagBlogJunction.countDocuments({
@@ -404,6 +402,20 @@ export const DELETE = async (request, { params }) => {
                 if (tagFound <= 0) await Tag.findByIdAndDelete(t);
             }),
         );
+
+        await Blog.deleteOne({ slug: blogSlug });
+
+        const imagesFound =
+            (await Blog.countDocuments({
+                bannerImage: blogToBeDeleted.bannerImage,
+            })) +
+            (await User.countDocuments({
+                profilePhoto: blogToBeDeleted.bannerImage,
+            }));
+            
+        if (imagesFound === 0) {
+            await Image.findByIdAndDelete(blogToBeDeleted.bannerImage);
+        }
 
         return NextResponse.json(
             { message: "Blog deleted Successfully", success: true },
