@@ -45,7 +45,8 @@ export const POST = async (request) => {
                 size: buffer.length,
                 contentType: profilePhoto.type,
             });
-            profilePhotoId = imageExist._id;
+
+            profilePhotoId = imageExist?._id;
 
             if (!imageExist) {
                 const imageDoc = new Image({
@@ -55,7 +56,7 @@ export const POST = async (request) => {
                     size: buffer.length,
                 });
                 const savedImage = await imageDoc.save();
-                profilePhotoId = savedImage._id;
+                profilePhotoId = savedImage?._id;
             }
         }
 

@@ -208,7 +208,7 @@ export const POST = async (request) => {
                 size: buffer.length,
                 contentType: bannerImage.type,
             });
-            bannerImageId = imageExist._id;
+            bannerImageId = imageExist?._id;
 
             if (!imageExist) {
                 const imageDoc = new Image({
@@ -218,7 +218,7 @@ export const POST = async (request) => {
                     size: buffer.length,
                 });
                 const savedImage = await imageDoc.save();
-                bannerImageId = savedImage._id;
+                bannerImageId = savedImage?._id;
             }
         }
 
