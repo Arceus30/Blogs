@@ -10,6 +10,7 @@ import Image from "@/models/Image";
 import Tag from "@/models/Tag";
 import TagBlogJunction from "@/models/TagBlogJunction";
 import User from "@/models/User";
+import mongoose from "mongoose";
 
 export const GET = async (_request, { params }) => {
     try {
@@ -364,7 +365,7 @@ export const DELETE = async (request, { params }) => {
                     message: "No Blogs Found",
                     success: false,
                 },
-                { status: 400 },
+                { status: 404 },
             );
         }
         if (blogToBeDeleted?.author.toString() !== user._id.toString()) {
@@ -374,10 +375,9 @@ export const DELETE = async (request, { params }) => {
                     message: "You are not authorized",
                     success: false,
                 },
-                { status: 400 },
+                { status: 403 },
             );
         }
-
         await Category.findByIdAndUpdate(blogToBeDeleted.category, {
             $inc: { blogCount: -1 },
         });
@@ -386,24 +386,25 @@ export const DELETE = async (request, { params }) => {
             blog: blogToBeDeleted._id,
         });
 
-        const tagIds = tagsToBeDeleted.map((t) => t._id);
+        const tagIds = tagsToBeDeleted.map((t) => t?.tag);
 
         await TagBlogJunction.deleteMany({ blog: blogToBeDeleted._id });
-
-        await Promise.all(
-            tagIds.map(async (t) => {
-                const tagFound = await TagBlogJunction.findOne({
-                    tag: t._id,
-                });
-                if (!tagFound) await Tag.findByIdAndDelete(t._id);
-            }),
-        );
 
         await User.findByIdAndUpdate(blogToBeDeleted.author, {
             $inc: { numBlogs: -1 },
         });
 
         await Blog.deleteOne({ slug: blogSlug });
+
+        await Promise.all(
+            tagIds.map(async (t) => {
+                const tagFound = await TagBlogJunction.countDocuments({
+                    tag: t,
+                });
+                if (tagFound <= 0) await Tag.findByIdAndDelete(t);
+            }),
+        );
+
         return NextResponse.json(
             { message: "Blog deleted Successfully", success: true },
             { status: 200 },
