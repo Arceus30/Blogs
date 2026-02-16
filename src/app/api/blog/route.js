@@ -12,6 +12,8 @@ import Tag from "@/models/Tag";
 import TagBlogJunction from "@/models/TagBlogJunction";
 import User from "@/models/User";
 
+const photoType = ["image/jpg", "image/jpeg", "image/png", "image/webp"];
+
 export const GET = async (request) => {
     try {
         await dbConnect();
