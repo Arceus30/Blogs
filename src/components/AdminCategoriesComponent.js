@@ -40,7 +40,10 @@ export default function Categories({ page }) {
     }, [refresh, page, setToast]);
 
     const handleDeleteCategory = async (id, slug) => {
-        if (categories.find((cat) => cat._id === id).name === "general") {
+        if (
+            categories.find((cat) => cat?._id?.toString() === id?.toString())
+                .name === "general"
+        ) {
             setToast("General category cannot be deleted", "error");
             return;
         }

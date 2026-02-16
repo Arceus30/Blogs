@@ -9,6 +9,7 @@ import { IoSend } from "react-icons/io5";
 import { useAuth } from "@/context/auth-provider";
 import { MdDelete } from "react-icons/md";
 import { useUser } from "@/context/user-provider";
+import { fullName } from "@/utils/formatName";
 
 const formatTimeAgo = (dateString) => {
     const now = new Date();
@@ -106,11 +107,41 @@ export default function Comments({ comments, blog, setRefresh }) {
                     className="p-4 bg-white/50 backdrop-blur-sm border border-gray-200 rounded-xl mb-3 flex flex-col gap-2 "
                 >
                     <div className="flex justify-between items-start mb-2">
-                        <p className="text-gray-900 text-justify wrap-break-word grow pr-4">
-                            {comment.text}
-                        </p>
-                        {(user?._id === comment?.author ||
-                            user?._id === blog?.auhor?._id) && (
+                        <div className="flex flex-col">
+                            <h5 className="text-gray-500 flex justify-center items-center gap-2 text-sm">
+                                {comment?.author?.profilePhoto ? (
+                                    <Image
+                                        src={`${process.env.NEXT_PUBLIC_PHOTO_API.replace("photoId", user?.profilePhoto)}`}
+                                        alt="Profile"
+                                        height={20}
+                                        width={20}
+                                        className="w-[20px] h-[20px] rounded-full object-cover  object-center overflow-hidden"
+                                        loading="lazy"
+                                        unoptimized
+                                    />
+                                ) : (
+                                    <div className="w-[20px] h-[20px] rounded-full border border-gray-500 flex items-center justify-center font-medium text-xs">
+                                        {comment?.author?.firstName
+                                            ?.charAt(0)
+                                            ?.toUpperCase() || "U"}
+                                        {comment?.author?.lastName
+                                            ?.charAt(0)
+                                            ?.toUpperCase() || "U"}
+                                    </div>
+                                )}
+                                {fullName(
+                                    comment?.author?.firstName,
+                                    comment?.author?.lastName,
+                                )}
+                            </h5>
+                            <p className="text-gray-900 text-justify wrap-break-word grow pr-4">
+                                {comment.text}
+                            </p>
+                        </div>
+                        {(user?._id?.toString() ===
+                            comment?.author?._id?.toString() ||
+                            user?._id?.toString() ===
+                                blog?.author?._id?.toString()) && (
                             <button
                                 className="bg-red-500 text-white font-medium p-2 rounded-xl border cursor-pointer hover:bg-red-700"
                                 onClick={() =>

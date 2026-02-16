@@ -149,7 +149,10 @@ export const PUT = async (request, { params }) => {
             user: user._id,
         });
         let i = 1;
-        while (slugFound && slugFound?._id !== category?._id) {
+        while (
+            slugFound &&
+            slugFound?._id?.toString() !== category?._id?.toString()
+        ) {
             newSlug = slug(validatedData.name + i);
             slugFound = await Category.findOne({
                 slug: newSlug,

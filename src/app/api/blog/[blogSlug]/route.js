@@ -24,7 +24,13 @@ export const GET = async (_request, { params }) => {
             );
         }
         const blog = await Blog.findOne({ slug: blogSlug })
-            .populate("category author comments")
+            .populate("category author")
+            .populate({
+                path: "comments",
+                populate: {
+                    path: "author",
+                },
+            })
             .lean();
 
         if (!blog) {
@@ -219,7 +225,10 @@ export const PUT = async (request, { params }) => {
         let newSlug = slug(validatedData.title);
         let slugFound = await Blog.findOne({ slug: newSlug });
         let i = 1;
-        while (slugFound && slugFound._id !== blog._id) {
+        while (
+            slugFound &&
+            slugFound?._id?.toString() !== blog?._id?.toString()
+        ) {
             newSlug = slug(validatedData.title + i);
             slugFound = await Blog.findOne({ slug: newSlug });
             i += 1;
@@ -412,7 +421,6 @@ export const DELETE = async (request, { params }) => {
             (await User.countDocuments({
                 profilePhoto: blogToBeDeleted.bannerImage,
             }));
-            
         if (imagesFound === 0) {
             await Image.findByIdAndDelete(blogToBeDeleted.bannerImage);
         }

@@ -103,7 +103,7 @@ export default function BlogTable({ page, author, isArchived = false }) {
                         <th className="px-8 py-4 text-center text-sm font-medium text-gray-500 uppercase">
                             Category
                         </th>
-                        {user?._id === author?._id && (
+                        {user?._id?.toString() === author?._id?.toString() && (
                             <>
                                 <th className="px-8 py-4 text-center text-sm font-medium text-gray-500 uppercase">
                                     Status
@@ -134,13 +134,14 @@ export default function BlogTable({ page, author, isArchived = false }) {
                             </td>
                             <td className="px-8 py-4 whitespace-nowrap text-center">
                                 <Link
-                                    href={`${user?._id !== author?._id ? process.env.NEXT_PUBLIC_CATEGORY : process.env.NEXT_ADMIN_CATEGORY}/${blog?.category?.slug}`}
+                                    href={`${user?._id?.toString() !== author?._id?.toString() ? process.env.NEXT_PUBLIC_CATEGORY : process.env.NEXT_ADMIN_CATEGORY}/${blog?.category?.slug}`}
                                     className="text-sm text-gray-900 hover:underline"
                                 >
                                     {blog.category?.name}
                                 </Link>
                             </td>
-                            {user?._id === author?._id && (
+                            {user?._id?.toString() ===
+                                author?._id?.toString() && (
                                 <>
                                     <td className="px-5 py-4 whitespace-nowrap text-center">
                                         <span
@@ -150,7 +151,8 @@ export default function BlogTable({ page, author, isArchived = false }) {
                                         </span>
                                     </td>
                                     <td className="px-8 py-4 whitespace-nowrap text-sm font-medium space-x-2 text-center">
-                                        {blog?.author?._id === user?._id && (
+                                        {blog?.author?._id?.toString() ===
+                                            user?._id?.toSing() && (
                                             <button
                                                 className="text-indigo-600 hover:text-indigo-900 font-medium"
                                                 onClick={() =>
