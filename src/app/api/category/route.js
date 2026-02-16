@@ -2,6 +2,7 @@ import { dbConnect } from "@/lib/db";
 import { NextResponse } from "next/server";
 import Category from "@/models/Category";
 import User from "@/models/User";
+import Blog from "@/models/Blog";
 
 export const GET = async (req) => {
     try {
@@ -11,7 +12,17 @@ export const GET = async (req) => {
         const limit = parseInt(searchParams?.get("limit"), 10);
         const sortBy = searchParams?.get("sortBy") || "createdAt";
         const skip = (page - 1) * limit;
+
+        const blogCategoryIds = await Blog.distinct("category", {
+            category: { $exists: true, $ne: null },
+        });
+
         const pipeline = [
+            {
+                $match: {
+                    _id: { $in: blogCategoryIds },
+                },
+            },
             {
                 $group: {
                     _id: "$name",

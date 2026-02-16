@@ -2,6 +2,7 @@ import { dbConnect } from "@/lib/db";
 import { NextResponse } from "next/server";
 import User from "@/models/User";
 import Category from "@/models/Category";
+import Blog from "@/models/Blog";
 import { categorySchema } from "@/utils/serverSchema";
 import { verifyAccessToken } from "@/utils/token";
 import slug from "slug";
@@ -33,6 +34,19 @@ export const GET = async (req) => {
                 { status: 400 },
             );
         }
+
+        const blogs = await Blog.find({ author: user._id });
+        if (blogs.length <= 0)
+            return NextResponse.json(
+                {
+                    success: true,
+                    message: "Categories fetched successfully",
+                    categories: [],
+                    totalPages: 0,
+                },
+                { status: 200 },
+            );
+
         await Category.ensureGeneralCategory(user._id);
 
         const categories = await Category.find({ user: user._id })

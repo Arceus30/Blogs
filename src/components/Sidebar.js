@@ -62,7 +62,7 @@ export default function Sidebar({ setIsOpen }) {
     return (
         <div
             ref={overlay}
-            className="absolute top-0 h-full w-full bg-black/50 flex z-50"
+            className="fixed inset-0 bg-black/50 flex z-50 h-[100vh]"
         >
             <div className="wrapper" ref={wrapper}>
                 <div className="absolute top-0 h-full w-64 bg-white shadow-lg z-40 flex flex-col">
