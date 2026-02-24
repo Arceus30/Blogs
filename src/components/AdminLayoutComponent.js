@@ -21,11 +21,11 @@ export default function AdminLayoutComponent({ children }) {
 
     if (userLoading || !user) return <Loading />;
     return (
-        <div className="grow flex bg-gray-300/20 relative">
+        <div className="grow flex bg-gray-300/20 relative flex-col sm:flex-row">
             <div className="flex items-start gap-2">
                 <SidebarComponent />
             </div>
-            {children};
+            <main className="grow sm:mx-3 flex flex-col">{children}</main>
         </div>
     );
 }

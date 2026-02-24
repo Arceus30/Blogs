@@ -4,9 +4,16 @@ import api from "@/lib/api";
 export const generateMetadata = async ({ params }) => {
     const slug = (await params)?.slug === "all" ? "" : (await params)?.slug;
     if (slug === "") return { title: "All" };
-    const catResponse = await api.get(
-        `${process.env.NEXT_PUBLIC_BASE_URL}${process.env.NEXT_PUBLIC_CATEGORY_API.replace("catSlug", slug)}`,
+
+    const baseUrl = new URL(process.env.NEXT_PUBLIC_BASE_URL);
+    const apiPath = process.env.NEXT_PUBLIC_CATEGORY_API.replace(
+        "catSlug",
+        slug,
     );
+    baseUrl.pathname = apiPath;
+    const fullUrl = baseUrl.toString();
+
+    const catResponse = await api.get(fullUrl);
     const name = catResponse?.data?.category?.name;
     return {
         title: name.charAt(0).toUpperCase() + name.slice(1),

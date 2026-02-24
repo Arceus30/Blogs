@@ -37,24 +37,27 @@ export default function BlogComponent({ slug }) {
 
     return (
         <>
-            <article className="w-full px-8 py-10">
+            <article className="w-full p-2">
                 {blog?.bannerImage &&
                     blog?.bannerImage !== null &&
                     blog?.bannerImage !== undefined && (
-                        <div className="h-64 relative">
+                        <div>
                             <Image
                                 src={`${process.env.NEXT_PUBLIC_PHOTO_API.replace("photoId", blog?.bannerImage)}`}
                                 alt={blog?.title}
-                                fill
-                                className="object-contain object-center"
+                                width={100}
+                                height={100}
+                                className="w-full max-h-[250px] object-contain object-center mx-auto"
                                 unoptimized
                             />
                         </div>
                     )}
-                <div className="text-center">
-                    <h1 className="text-6xl font-black mb-3">{blog?.title}</h1>
+                <div className="text-center mt-3">
+                    <h1 className="text-4xl sm:text-6xl font-black">
+                        {blog?.title}
+                    </h1>
 
-                    <div className="flex justify-center items-center gap-14 text-slate-600">
+                    <div className="flex flex-col justify-center items-center sm:flex-row sm:gap-14 text-slate-600">
                         <Link
                             href={`${process.env.NEXT_PUBLIC_AUTHOR}/${blog?.author?._id}`}
                             className="flex items-center gap-3 p-3 rounded-2xl cursor-pointer hover:underline"

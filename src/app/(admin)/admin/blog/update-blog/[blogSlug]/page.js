@@ -9,10 +9,10 @@ export default async function UpdateBlog({ params }) {
 
     return (
         <div className="grow flex flex-col items-center justify-center py-12 px-4">
-            <h1 className="text-3xl font-bold text-center text-gray-900 mb-2 px-30">
+            <h1 className="text-3xl font-bold text-center text-gray-900 mb-2 sm:px-30">
                 Update Blog
             </h1>
-            <div className="w-full px-30">
+            <div className="w-full sm:px-30">
                 <UpdateBlogForm slug={blogSlug} />
             </div>
         </div>

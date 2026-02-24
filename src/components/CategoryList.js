@@ -5,14 +5,14 @@ import Link from "next/link";
 import api from "@/lib/api";
 import { useToast } from "@/context/toast-provider";
 import Loading from "@/app/loading";
-
-const LIMIT = 6;
+import useScreenLimit from "@/hooks/mobileHook";
 
 export default function CategoryList() {
     const [allCategories, setAllCategories] = useState([]);
     const [currentIdx, setCurrentIdx] = useState(0);
     const [loading, setLoading] = useState(true);
     const { setToast } = useToast();
+    const { catLimit } = useScreenLimit();
 
     useEffect(() => {
         const fetch = async () => {
@@ -53,7 +53,7 @@ export default function CategoryList() {
     const maxIdx = allCategories?.length;
     const currentCategories = allCategories?.slice(
         currentIdx,
-        currentIdx + LIMIT,
+        currentIdx + catLimit,
     );
 
     if (loading) return <Loading />;
@@ -89,7 +89,7 @@ export default function CategoryList() {
                     </div>
                     <button
                         className="cursor-pointer hover:scale-120 hover:text-[#296374] disabled:cursor-not-allowed flex items-center"
-                        disabled={currentIdx + LIMIT >= maxIdx}
+                        disabled={currentIdx + catLimit >= maxIdx}
                         onClick={() =>
                             setCurrentIdx((prevIdx) =>
                                 Math.min(maxIdx, prevIdx + 1),

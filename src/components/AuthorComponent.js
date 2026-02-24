@@ -37,25 +37,20 @@ export default function AuthorComponent({ page, authorId }) {
     return (
         <>
             <div className="flex items-center gap-2">
-                <div className="text-white p-2 rounded-md text-lg">
-                    {author?.profilePhoto ? (
+                <div className="text-white rounded-md text-lg">
+                    {author?.profilePhoto && (
                         <Image
                             src={process.env.NEXT_PUBLIC_PHOTO_API.replace(
                                 "photoId",
                                 author?.profilePhoto,
                             )}
                             alt={fullName(author?.firstName, author?.lastName)}
-                            height={50}
-                            width={50}
-                            className="w-[50px] h-[50px] rounded-full object-cover object-center overflow-hidden"
+                            width={100}
+                            height={100}
+                            className="w-full max-w-[150px] rounded-full object-cover object-center overflow-hidden"
                             loading="lazy"
                             unoptimized
                         />
-                    ) : (
-                        <div className="w-[50px] h-[50px] rounded-full border border-2 border-black text-black flex items-center justify-center font-medium text-xl">
-                            {author?.firstName?.charAt(0)?.toUpperCase() || "U"}
-                            {author?.lastName?.charAt(0)?.toUpperCase() || "U"}
-                        </div>
                     )}
                 </div>
                 <div className="flex flex-col">

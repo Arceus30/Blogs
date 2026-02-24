@@ -16,7 +16,7 @@ export default function Footer() {
                         <h4 className="text-lg font-semibold mb-1">
                             Quick Links
                         </h4>
-                        <ul className="flex gap-5">
+                        <ul className="flex gap-2 md:gap-5 flex-col sm:flex-row">
                             <li>
                                 <Link
                                     href={process.env.NEXT_PUBLIC_HOMEPAGE}

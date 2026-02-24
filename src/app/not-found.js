@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { MdOutlineWarning } from "react-icons/md";
+import "./globals.css";
 
 export const metadata = {
     title: { absolute: "404 - Page Not Found" },
@@ -7,7 +8,7 @@ export const metadata = {
 
 export default function NotFound() {
     return (
-        <div className="grow flex items-center justify-center flex-col">
+        <div className="min-h-screen flex flex-col items-center justify-center">
             <div className="h-24 w-24 rounded-2xl bg-red-100 flex items-center justify-center mb-8">
                 <MdOutlineWarning size={65} color="#f21f1fba" />
             </div>

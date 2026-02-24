@@ -33,6 +33,7 @@ export default function PublicLayout({ children }) {
                         >
                             <Header />
                             {children}
+                            <Footer />
                             <ToastContainer
                                 position="top-right"
                                 autoClose={3000}
@@ -46,7 +47,6 @@ export default function PublicLayout({ children }) {
                                 theme="light"
                                 transition={Slide}
                             />
-                            <Footer />
                         </body>
                     </UserProvider>
                 </AuthProvider>

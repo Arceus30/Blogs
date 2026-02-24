@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-    title: { default: "Admin Dashboard", template: "%s | Admin Dashboard" },
+    title: { default: "Admin", template: "%s | Admin Dashboard" },
     description: "Admin Dashboard",
 };
 
@@ -34,19 +34,6 @@ export default function AdminLayout({ children }) {
                             <AdminLayoutComponent>
                                 {children}
                             </AdminLayoutComponent>
-                            <ToastContainer
-                                position="top-right"
-                                autoClose={3000}
-                                hideProgressBar={false}
-                                newestOnTop
-                                closeOnClick={false}
-                                rtl={false}
-                                pauseOnFocusLoss
-                                draggable
-                                pauseOnHover
-                                theme="light"
-                                transition={Slide}
-                            />
                             <footer className="bg-gray-900 text-white pt-2">
                                 <div className="container mx-auto px-8">
                                     <div className="grid grid-cols-2 gap-8">
@@ -64,7 +51,7 @@ export default function AdminLayout({ children }) {
                                             <h4 className="text-lg font-semibold mb-1">
                                                 Quick Links
                                             </h4>
-                                            <ul className="flex gap-5">
+                                            <ul className="flex flex-col sm:flex-row gap-5">
                                                 <li>
                                                     <Link
                                                         href={
@@ -109,6 +96,19 @@ export default function AdminLayout({ children }) {
                                     </div>
                                 </div>
                             </footer>
+                            <ToastContainer
+                                position="top-right"
+                                autoClose={3000}
+                                hideProgressBar={false}
+                                newestOnTop
+                                closeOnClick={false}
+                                rtl={false}
+                                pauseOnFocusLoss
+                                draggable
+                                pauseOnHover
+                                theme="light"
+                                transition={Slide}
+                            />
                         </body>
                     </UserProvider>
                 </AuthProvider>

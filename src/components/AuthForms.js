@@ -431,7 +431,7 @@ export const UpdateProfileForm = () => {
                     id="bio"
                     {...register("bio")}
                     type="text"
-                    rows={10}
+                    rows={6}
                     className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black ${
                         errors.bio
                             ? "border-red-300 bg-red-50"
@@ -505,7 +505,7 @@ export const ChangePasswordForm = () => {
         <form
             onSubmit={handleSubmit(onSubmit)}
             noValidate
-            className="mt-4 w-2/5"
+            className="mt-4 md:w-2/5 w-full"
         >
             <div className="mb-6">
                 <label

@@ -82,7 +82,7 @@ export default function BlogCard({ blog }) {
                     </div>
                 )}
 
-                <p className="text-gray-600 mb-3 line-clamp-3">
+                <p className="text-gray-600 mb-3 text-justify line-clamp-3">
                     {blog?.content}...
                 </p>
                 <Link

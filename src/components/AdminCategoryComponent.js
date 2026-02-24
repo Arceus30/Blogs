@@ -7,8 +7,8 @@ import { useToast } from "@/context/toast-provider";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/context/user-provider";
 import Loading from "@/app/loading";
+import useScreenLimit from "@/hooks/mobileHook";
 
-const LIMIT = 9;
 export default function AdminCategoryComponent({ slug, page }) {
     const [name, setName] = useState("");
     const { setToast } = useToast();
@@ -17,6 +17,7 @@ export default function AdminCategoryComponent({ slug, page }) {
     const router = useRouter();
     const { user } = useUser();
     const [loading, setLoading] = useState(true);
+    const { blogLimit } = useScreenLimit();
 
     useEffect(() => {
         const fetchCat = async () => {
@@ -27,7 +28,7 @@ export default function AdminCategoryComponent({ slug, page }) {
                 );
                 setName(catResponse.data?.category?.name);
                 const blogResponse = await api.get(
-                    `${process.env.NEXT_PUBLIC_BLOGS_API}?cat=${slug}&page=${page}&limit=${encodeURIComponent(LIMIT)}&author=${user._id}`,
+                    `${process.env.NEXT_PUBLIC_BLOGS_API}?cat=${slug}&page=${page}&limit=${encodeURIComponent(blogLimit)}&author=${user._id}`,
                 );
                 setBlogs(blogResponse.data?.blogs);
                 setMaxPage(blogResponse.data?.maxPage);
@@ -48,12 +49,12 @@ export default function AdminCategoryComponent({ slug, page }) {
 
     return (
         <>
-            <h2 className="text-3xl font-bold mb-2 text-center">
+            <h2 className="text-3xl font-bold mb-8 text-center">
                 Your Blogs
                 {name &&
                     ` from category ${name.charAt(0).toUpperCase() + name.slice(1)}`}
             </h2>
-            <div className="grid grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
                 {blogs?.map((blog) => (
                     <BlogCard key={blog._id} blog={blog} />
                 ))}

@@ -95,8 +95,11 @@ export default function Searchbar() {
     };
 
     return (
-        <div className="relative grow flex">
-            <form onSubmit={handleSubmit} className="w-full">
+        <>
+            <form
+                onSubmit={handleSubmit}
+                className="w-full relative flex justify-end"
+            >
                 <input
                     id="query"
                     ref={inputRef}
@@ -106,8 +109,8 @@ export default function Searchbar() {
                         setQuery(e.target.value);
                         setShowDropdown(e.target.value.length > 1);
                     }}
-                    placeholder="Search blogs, categories, tags..."
-                    className="w-full px-5 py-3 text-gray-900 placeholder-gray-500 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-3 focus:ring-blue-100 focus:border-blue-300 pr-12"
+                    placeholder="Search ..."
+                    className="w-full px-5 sm:px-2 py-3 text-gray-900 placeholder-gray-500 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-3 focus:ring-blue-100 focus:border-blue-300 pr-12"
                 />
                 <button
                     type="submit"
@@ -189,6 +192,6 @@ export default function Searchbar() {
                     </div>
                 </div>
             )}
-        </div>
+        </>
     );
 }

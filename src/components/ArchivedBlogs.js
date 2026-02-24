@@ -8,12 +8,11 @@ export default function ArchivedBlogsComponent({ page = 1 }) {
 
     return (
         <div className="grow mx-3 flex flex-col">
-            <div className="flex justify-between items-center p-2">
-                {!userLoading && (
-                    <h1 className="text-lg font-semibold px-5 py-1">
-                        {fullName(user?.firstName, user?.lastName)}
-                    </h1>
-                )}
+            <div className="flex flex-col justify-center p-2">
+                <h1 className="text-lg font-semibold py-1">
+                    Hi, {fullName(user?.firstName, user?.lastName)}
+                </h1>
+                <p className="text-sm text-gray-500">{user.bio}</p>
             </div>
             <div className="border-b-2 p-2">
                 <h1 className="text-2xl font-bold text-gray-900">

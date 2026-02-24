@@ -7,8 +7,8 @@ import Link from "next/link";
 import api from "@/lib/api";
 import { useUser } from "@/context/user-provider";
 import Loading from "@/app/loading";
+import useScreenLimit from "@/hooks/mobileHook";
 
-const LIMIT = 6;
 export default function BlogTable({ page, author, isArchived = false }) {
     const [blogs, setBlogs] = useState([]);
     const [maxPage, setMaxPage] = useState(-1);
@@ -17,6 +17,7 @@ export default function BlogTable({ page, author, isArchived = false }) {
     const { user } = useUser();
     const [refresh, setRefresh] = useState(false);
     const [loading, setLoading] = useState(false);
+    const { blogLimit } = useScreenLimit();
 
     useEffect(() => {
         const fetchBlogs = async () => {
@@ -25,7 +26,7 @@ export default function BlogTable({ page, author, isArchived = false }) {
                 let route = "";
                 if (!isArchived) route = process.env.NEXT_PUBLIC_BLOGS_API;
                 else route = process.env.NEXT_PUBLIC_ADMIN_ARCHIVED_BLOG_API;
-                route += `?page=${encodeURIComponent(page)}&limit=${encodeURIComponent(LIMIT)}&author=${author?._id}`;
+                route += `?page=${encodeURIComponent(page)}&limit=${encodeURIComponent(blogLimit)}&author=${author?._id}`;
                 const res = await api.get(route);
                 setBlogs(res?.data?.blogs);
                 setMaxPage(res?.data?.maxPage);
@@ -94,21 +95,21 @@ export default function BlogTable({ page, author, isArchived = false }) {
             <table className="w-full">
                 <thead className="bg-gray-50">
                     <tr>
-                        <th className="px-8 py-4 text-center text-sm font-medium text-gray-500 uppercase">
+                        <th className="sm:block hidden px-4 md:px-8 py-4 text-center text-sm font-medium text-gray-500 uppercase">
                             Serial No.
                         </th>
-                        <th className="px-8 py-4 text-center text-sm font-medium text-gray-500 uppercase">
+                        <th className="px-2 sm:px-4 md:px-8 py-4 text-center text-xs font-medium text-gray-500 uppercase">
                             Blog Title
                         </th>
-                        <th className="px-8 py-4 text-center text-sm font-medium text-gray-500 uppercase">
+                        <th className="sm:block hidden px-4 md:px-8 py-4 text-center text-sm font-medium text-gray-500 uppercase">
                             Category
                         </th>
                         {user?._id?.toString() === author?._id?.toString() && (
                             <>
-                                <th className="px-8 py-4 text-center text-sm font-medium text-gray-500 uppercase">
+                                <th className="px-2 sm:px-4 md:px-8 py-4 text-center text-xs font-medium text-gray-500 uppercase">
                                     Status
                                 </th>
-                                <th className="px-8 py-4 text-center text-sm font-medium text-gray-500 uppercase">
+                                <th className="px-2 sm:px-4 md:px-8 py-4 text-center text-xs font-medium text-gray-500 uppercase">
                                     Actions
                                 </th>
                             </>
@@ -121,10 +122,10 @@ export default function BlogTable({ page, author, isArchived = false }) {
                             key={blog?._id || index}
                             className="hover:bg-gray-400/25"
                         >
-                            <td className="px-8 py-4 text-center text-sm font-medium text-gray-900">
+                            <td className="sm:block hidden px-4 md:px-8 py-4 text-center text-sm font-medium text-gray-900">
                                 {index + 1}
                             </td>
-                            <td className="px-8 py-4 max-w-md text-center">
+                            <td className="px-2 sm:px-4 md:px-8 py-4 max-w-md text-center">
                                 <Link
                                     href={`${process.env.NEXT_PUBLIC_BLOG}/${blog?.slug}`}
                                     className="text-sm font-medium text-gray-900 truncate hover:underline"
@@ -132,7 +133,7 @@ export default function BlogTable({ page, author, isArchived = false }) {
                                     {blog.title}
                                 </Link>
                             </td>
-                            <td className="px-8 py-4 whitespace-nowrap text-center">
+                            <td className="sm:block hidden px-4 md:px-8 py-4 whitespace-nowrap text-center">
                                 <Link
                                     href={`${user?._id?.toString() !== author?._id?.toString() ? process.env.NEXT_PUBLIC_CATEGORY : process.env.NEXT_ADMIN_CATEGORY}/${blog?.category?.slug}`}
                                     className="text-sm text-gray-900 hover:underline"
@@ -143,27 +144,24 @@ export default function BlogTable({ page, author, isArchived = false }) {
                             {user?._id?.toString() ===
                                 author?._id?.toString() && (
                                 <>
-                                    <td className="px-5 py-4 whitespace-nowrap text-center">
+                                    <td className="px-2 sm:px-4 md:px-8 py-4 whitespace-nowrap text-center">
                                         <span
                                             className={`inline-flex px-2 py-1 text-sm font-semibold rounded-full`}
                                         >
                                             {blog.status}
                                         </span>
                                     </td>
-                                    <td className="px-8 py-4 whitespace-nowrap text-sm font-medium space-x-2 text-center">
-                                        {blog?.author?._id?.toString() ===
-                                            user?._id?.toSing() && (
-                                            <button
-                                                className="text-indigo-600 hover:text-indigo-900 font-medium"
-                                                onClick={() =>
-                                                    router.push(
-                                                        `${process.env.NEXT_PUBLIC_UPDATE_BLOG}/${blog.slug}`,
-                                                    )
-                                                }
-                                            >
-                                                Update
-                                            </button>
-                                        )}
+                                    <td className="px-2 sm:px-4 md:px-8 py-4 whitespace-nowrap text-sm font-medium text-center flex sm:flex-row flex-col gap-2 items-center justify-center">
+                                        <button
+                                            className="text-indigo-600 hover:text-indigo-900 font-medium"
+                                            onClick={() =>
+                                                router.push(
+                                                    `${process.env.NEXT_PUBLIC_UPDATE_BLOG}/${blog.slug}`,
+                                                )
+                                            }
+                                        >
+                                            Update
+                                        </button>
                                         {blog.status !== "archived" ? (
                                             <button
                                                 className="text-yellow-600 hover:text-yellow-900 font-medium"

@@ -1,12 +1,12 @@
 "use client";
 import api from "@/lib/api";
-const LIMIT = 90;
 import { useState, useEffect } from "react";
 import { FaAngleRight, FaAngleLeft } from "react-icons/fa6";
 import Link from "next/link";
 import { useToast } from "@/context/toast-provider";
 import Loading from "@/app/loading";
 import { useRouter } from "next/navigation";
+import useScreenLimit from "@/hooks/mobileHook";
 
 export default function TagsComponent({ page }) {
     const router = useRouter();
@@ -14,13 +14,14 @@ export default function TagsComponent({ page }) {
     const { setToast } = useToast();
     const [maxPage, setMaxPage] = useState(-1);
     const [loading, setLoading] = useState(true);
+    const { tagsLimit } = useScreenLimit();
 
     useEffect(() => {
         const fetch = async () => {
             setLoading(true);
             try {
                 const response = await api.get(
-                    `${process.env.NEXT_PUBLIC_TAGS_API}?page=${page}&limit=${LIMIT}`,
+                    `${process.env.NEXT_PUBLIC_TAGS_API}?page=${page}&limit=${tagsLimit}`,
                 );
                 const tags = response.data.tags;
                 setTag(tags);
@@ -42,7 +43,7 @@ export default function TagsComponent({ page }) {
     return (
         tag?.length > 0 && (
             <>
-                <div className="grow grid grid-rows-9 grid-cols-5 gap-3">
+                <div className="grow grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 grid-rows-6 sm:grid-rows-7 md:grid-rows-9 gap-3">
                     {tag?.map((tg, idx) => (
                         <Link
                             key={tg?._id || idx}

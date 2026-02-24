@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/context/toast-provider";
 import { useRouter } from "next/navigation";
 import Loading from "@/app/loading";
+import useScreenLimit from "@/hooks/mobileHook";
 
 export default function TagComponent({ page, tagId }) {
     const [name, setName] = useState("");
@@ -14,6 +15,7 @@ export default function TagComponent({ page, tagId }) {
     const [maxPage, setMaxPage] = useState(-1);
     const router = useRouter();
     const [loading, setLoading] = useState(true);
+    const { blogLimit } = useScreenLimit();
 
     useEffect(() => {
         const fetchTag = async () => {
@@ -25,7 +27,7 @@ export default function TagComponent({ page, tagId }) {
                 setName(tagResponse.data?.tag?.name);
 
                 const blogResponse = await api.get(
-                    `${process.env.NEXT_PUBLIC_BLOGS_API}?tag=${tagId}&page=${page}&limit=9`,
+                    `${process.env.NEXT_PUBLIC_BLOGS_API}?tag=${encodeURIComponent(tagId)}&page=${encodeURIComponent(page)}&limit=${encodeURIComponent(blogLimit)}`,
                 );
                 setBlogs(blogResponse?.data?.blogs);
                 setMaxPage(blogResponse?.data?.maxPage);
@@ -50,7 +52,7 @@ export default function TagComponent({ page, tagId }) {
             <h2 className="text-3xl font-bold mb-8 text-center">
                 Latest Blogs {name && `from tag ${name}`}
             </h2>
-            <div className="grid grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
                 {blogs?.map((blog) => (
                     <BlogCard key={blog._id} blog={blog} />
                 ))}

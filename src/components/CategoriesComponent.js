@@ -6,7 +6,7 @@ import { useToast } from "@/context/toast-provider";
 import api from "@/lib/api";
 import Loading from "@/app/loading";
 import { useRouter } from "next/navigation";
-const LIMIT = 45;
+import useScreenLimit from "@/hooks/mobileHook";
 
 export default function CategoriesComponent({ page }) {
     const router = useRouter();
@@ -14,13 +14,14 @@ export default function CategoriesComponent({ page }) {
     const [maxPage, setMaxPage] = useState(-1);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
+    const { categoriesLimit } = useScreenLimit();
 
     useEffect(() => {
         const fetch = async () => {
             setLoading(true);
             try {
                 const response = await api.get(
-                    `${process.env.NEXT_PUBLIC_CATEGORIES_API}?page=${page}&limit=${LIMIT}&sortBy=name`,
+                    `${process.env.NEXT_PUBLIC_CATEGORIES_API}?page=${page}&limit=${categoriesLimit}&sortBy=name`,
                 );
                 const allCount = response.data?.categories?.reduce(
                     (acc, val) => acc + val.blogCount,
@@ -56,7 +57,7 @@ export default function CategoriesComponent({ page }) {
     return (
         categories?.length > 1 && (
             <>
-                <div className="grow grid grid-rows-9 grid-cols-5 gap-3">
+                <div className="grow grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 grid-rows-6 sm:grid-rows-7 md:grid-rows-9 gap-3">
                     {categories?.map((cat, idx) => (
                         <Link
                             key={idx}

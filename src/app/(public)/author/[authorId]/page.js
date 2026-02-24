@@ -4,9 +4,15 @@ import { fullName } from "@/utils/formatName";
 
 export const generateMetadata = async ({ params }) => {
     const authorId = (await params)?.authorId;
-    const response = await api.get(
-        `${process.env.NEXT_PUBLIC_BASE_URL}${process.env.NEXT_PUBLIC_AUTHOR_API.replace("authorId", authorId)}`,
+
+    const baseUrl = new URL(process.env.NEXT_PUBLIC_BASE_URL);
+    const apiPath = process.env.NEXT_PUBLIC_AUTHOR_API.replace(
+        "authorId",
+        authorId,
     );
+    baseUrl.pathname = apiPath;
+    const fullUrl = baseUrl.toString();
+    const response = await api.get(fullUrl);
     const { firstName, lastName } = response?.data?.user;
     return {
         title: fullName(firstName, lastName),
@@ -19,7 +25,7 @@ export default async function Author({ params, searchParams }) {
     const page = (await searchParams)?.page;
 
     return (
-        <div className="grow flex flex-col bg-gray-300/20 relative px-10">
+        <div className="grow flex flex-col bg-gray-300/20 relative px-5 md:px-10 sm:py-3">
             <AuthorComponent
                 page={parseInt(page, 10) || 1}
                 authorId={authorId}

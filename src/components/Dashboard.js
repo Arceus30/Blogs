@@ -13,20 +13,20 @@ export default function DashboardCompnent({ page = 1 }) {
         user && (
             <>
                 <div className="flex justify-between items-center p-2">
-                    <div className="px-5 py-1">
-                        <h1 className="text-lg font-semibold">
+                    <div className="px-2 sm:px-5 py-1">
+                        <h1 className="text-sm sm:text-lg font-semibold">
                             Hi, {fullName(user?.firstName, user?.lastName)}
                         </h1>
                         <p className="text-sm text-gray-500">{user.bio}</p>
                     </div>
                     <Link
-                        className="flex justify-center items-center gap-2 text-lg font-semibold text-white px-5 py-1 bg-green-500 rounded-2xl mr-25 hover:bg-green-700"
+                        className="flex justify-center items-center gap-2 text-sm sm:text-lg font-semibold text-white px-2 sm:px-5 py-1 bg-green-500 rounded-2xl sm:mr-25 hover:bg-green-700"
                         href={process.env.NEXT_PUBLIC_CREATE_BLOG}
                     >
-                        Create new Blog <FaRegSquarePlus />
+                        Create new Blog <FaRegSquarePlus size={30} />
                     </Link>
                 </div>
-                <div className="border-b-2">
+                <div className="border-b-2 mx-3">
                     <h1 className="text-2xl font-bold text-gray-900">
                         All Blogs
                     </h1>

@@ -7,14 +7,14 @@ import { useToast } from "@/context/toast-provider";
 import api from "@/lib/api";
 import Loading from "@/app/loading";
 import Link from "next/link";
-
-const LIMIT = 6;
+import useScreenLimit from "@/hooks/mobileHook";
 
 export default function BlogList({ cat, page }) {
     const [blogs, setBlogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [maxPage, setMaxPage] = useState(-1);
     const { setToast } = useToast();
+    const { blogLimit } = useScreenLimit();
 
     useEffect(() => {
         const fetch = async () => {
@@ -22,7 +22,7 @@ export default function BlogList({ cat, page }) {
             try {
                 let route = `${process.env.NEXT_PUBLIC_BLOGS_API}`;
                 route += `?cat=${encodeURIComponent(cat)}`;
-                route += `&page=${encodeURIComponent(page)}&limit=${encodeURIComponent(LIMIT)}`;
+                route += `&page=${encodeURIComponent(page)}&limit=${encodeURIComponent(blogLimit)}`;
                 const res = await api.get(route);
                 setBlogs(res.data?.blogs);
                 setMaxPage(res.data?.maxPage);
@@ -46,7 +46,7 @@ export default function BlogList({ cat, page }) {
                 <h2 className="text-3xl font-bold mb-8 text-center">
                     Latest Blogs
                 </h2>
-                <div className="grid grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
                     {blogs?.map((blog) => (
                         <BlogCard key={blog?._id} blog={blog} />
                     ))}
